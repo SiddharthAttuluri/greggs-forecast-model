@@ -13,7 +13,7 @@ import numpy as np  # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 RES = ROOT / "simulation" / "results"
-SURFACE, INK, INK2, GRID = "#fcfcfb", "#0b0b0b", "#52514e", "#e4e3df"
+SURFACE, INK, INK2, GRID = "#ffffff", "#0b0b0b", "#52514e", "#e4e3df"
 BLUE, RED = "#2a78d6", "#e34948"
 plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 10, "axes.edgecolor": GRID,
                      "axes.labelcolor": INK2, "xtick.color": INK2, "ytick.color": INK2,
@@ -36,7 +36,7 @@ def histogram():
     ax.grid(axis="y", color=GRID, linewidth=0.8); ax.set_axisbelow(True)
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
-    fig.tight_layout(); fig.savefig(RES / "fy26_upbt_histogram.png", dpi=160); plt.close(fig)
+    fig.tight_layout(); fig.savefig(RES / "fy26_upbt_histogram.png", dpi=160, facecolor="#ffffff"); plt.close(fig)
 
 
 def tornado():
@@ -63,7 +63,7 @@ def tornado():
     ax.set_xlim(min(lo + hi) - 15, max(lo + hi) + 15)
     for s in ("top", "right", "left"):
         ax.spines[s].set_visible(False)
-    fig.tight_layout(); fig.savefig(RES / "tornado_fy28_upbt.png", dpi=160); plt.close(fig)
+    fig.tight_layout(); fig.savefig(RES / "tornado_fy28_upbt.png", dpi=160, facecolor="#ffffff"); plt.close(fig)
 
 
 if __name__ == "__main__":

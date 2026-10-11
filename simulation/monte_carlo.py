@@ -214,6 +214,10 @@ def main():
     outdir = pathlib.Path(args.out)
     outdir.mkdir(parents=True, exist_ok=True)
 
+    selected = load_workbook(args.workbook, data_only=True)["Scenarios"]["B4"].value
+    if selected not in ("Base", 1):
+        raise SystemExit(f"Scenarios!B4 is '{selected}'. Set it to Base and save the workbook before running: "
+                         "the simulation's most-likely values are read from the base case.")
     base, ranges, fixed, corr, hist = load_inputs(args.workbook)
     op = opening_position(hist)
 
@@ -258,6 +262,33 @@ def main():
                         round(min(o_lo["cash"]), 1), round(min(o_hi["cash"]), 1)])
     tornado.sort(key=lambda r: -abs(r[3]))
 
+    # scenario snapshot: the Scenarios tab's upside / downside put the five revenue and margin
+    # drivers at their range max / min together (same as switching Scenarios!B4 in Excel)
+    scen_keys = ["open", "lfl", "newshop", "b2b", "margin"]
+
+    def at(edge):
+        d = {k: list(v) for k, v in base.items()}
+        for k in scen_keys:
+            d[k] = [ranges[k][j][edge] for j in range(3)]
+        return project(d, fixed, op)
+
+    scen = {"Downside": at(0), "Base": base_out, "Upside": at(1)}
+    scen_rows = []
+    for name, o in scen.items():
+        scen_rows.append([name] + [round(float(o["rev"][j]), 1) for j in range(3)]
+                         + [round(float(o["upbt"][j]), 1) for j in range(3)]
+                         + [round(float(min(o["cash"])), 1)])
+
+    # sensitivities: +/-1 percentage point on LFL growth and margin in every year, others at base
+    sens_rows = []
+    for key, lab in (("lfl", "LFL growth"), ("margin", "Operating margin")):
+        for sign in (1, -1):
+            d = {k: list(v) for k, v in base.items()}
+            d[key] = [x + sign * 0.01 for x in d[key]]
+            o = project(d, fixed, op)
+            sens_rows.append([f"{lab} {'+' if sign > 0 else '-'}1 point"]
+                             + [round(float(o["upbt"][j] - base_out["upbt"][j]), 1) for j in range(3)])
+
     with open(outdir / "summary_percentiles.csv", "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["measure", "year", "P5", "P25", "P50", "P75", "P95", "mean", "base_case"])
@@ -271,6 +302,15 @@ def main():
         w.writerow(["driver", "FY28 uPBT at driver min", "FY28 uPBT at driver max", "swing",
                     "lowest cash at driver min", "lowest cash at driver max"])
         w.writerows(tornado)
+    with open(outdir / "scenarios.csv", "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["scenario", "revenue FY26", "revenue FY27", "revenue FY28",
+                    "uPBT FY26", "uPBT FY27", "uPBT FY28", "lowest cash FY26-FY28"])
+        w.writerows(scen_rows)
+    with open(outdir / "sensitivities_upbt.csv", "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["change", "FY26", "FY27", "FY28"])
+        w.writerows(sens_rows)
     np.savetxt(outdir / "fy26_upbt_runs.csv", sims["upbt"][0], fmt="%.2f", header="fy26_underlying_pbt", comments="")
     np.savetxt(outdir / "fy28_upbt_runs.csv", sims["upbt"][2], fmt="%.2f", header="fy28_underlying_pbt", comments="")
     np.savetxt(outdir / "min_cash_runs.csv", min_cash, fmt="%.2f", header="min_cash_fy26_fy28", comments="")

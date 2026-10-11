@@ -23,9 +23,9 @@ scripts/locate_statements.py            finds the statements and key notes in ea
 scripts/verify_sources.py               checks every figure is printed on the page it cites
 scripts/reconcile.py                    rebuilds every subtotal and ties it to the reported totals
 scripts/build_workbook.py               builds the Excel model from the CSV
-model/GRG_model_v1.0.xlsx               the current Excel model: assumptions, revenue build, FY26–FY28 forecast, scenarios, back-test, tax and audit review, simulation results, one-page summary
+model/GRG_model_v1.0.xlsx               the current Excel model; opens on a one-page Summary, then assumptions, revenue build, FY26–FY28 forecast, scenarios, back-test, tax and audit review, saved simulation outputs, checks
 simulation/monte_carlo.py               Monte Carlo engine: re-implements the model in Python and runs 10,000 scenarios
-simulation/charts.py, add_to_workbook.py  charts and the Simulation tab
+simulation/charts.py, add_to_workbook.py  charts, and the Simulation tab (saved outputs the Summary links to)
 simulation/results/                     percentiles, probabilities, tornado table, run-level outputs, charts
 ```
 
@@ -57,12 +57,32 @@ Three scenarios show the extremes; the simulation shows how likely each outcome 
 |---|---|---|---|
 | £m | 169.8 | 179.9 | 189.9 |
 
-- About a 90% chance FY26 underlying profit before tax beats FY25 (£171.9m).
-- Cash stays positive in every run (1% chance it dips below £50m), so no new borrowing is needed.
+Results are conditional on the chosen ranges and correlations, not a forecast of certainty.
+
+- In about 90% of runs FY26 underlying profit before tax beats FY25 (£171.9m).
+- Cash stays positive in every run (below £50m in about 1%), so on these assumptions no new borrowing is needed.
 - Margin is by far the biggest driver of FY28 profit (a £53m swing across its range), followed by like-for-like growth (£23m).
 
 ![FY26 distribution](simulation/results/fy26_upbt_histogram.png)
 ![Tornado](simulation/results/tornado_fy28_upbt.png)
+
+## Model limitations
+
+- Operating profit is a margin on revenue, so sales changes carry no operating leverage and fixed costs are not modelled separately.
+- There is no separate impairment line, although recoverability of shop assets (IAS 36) is the auditor's key audit matter.
+- The simulation, scenario comparison and sensitivities are saved outputs: they must be re-run after assumptions change (below).
+
+## Refreshing the saved outputs
+
+The Simulation tab and the amber figures on the Summary are saved values, not live formulas. The Checks tab (rows 26–27) and a check on the Summary flag them when they no longer match the live model. After changing an assumption:
+
+```bash
+# 1. in Excel: set Scenarios!B4 to Base and save
+python simulation/monte_carlo.py --workbook model/GRG_model_v1.0.xlsx   # stops if B4 is not Base; prints the Python-vs-Excel control
+python simulation/charts.py
+python simulation/add_to_workbook.py                                     # rewrites the Simulation tab in place, keeping the conclusions
+# 2. open the workbook so Excel recalculates; confirm the checks show 0
+```
 
 ## Presentation choices
 
@@ -84,6 +104,7 @@ python scripts/reconcile.py
 python scripts/build_workbook.py
 python simulation/monte_carlo.py --workbook model/GRG_model_v1.0.xlsx
 python simulation/charts.py
+python simulation/add_to_workbook.py
 ```
 
 The annual reports are not stored here; they are published by Greggs plc on its investor website.
