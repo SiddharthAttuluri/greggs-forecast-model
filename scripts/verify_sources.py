@@ -8,6 +8,8 @@ Limits (stated plainly):
   * It proves the number is printed on the cited page, not that it sits in the right
     column or row. The reconciliation checks (reconcile.py) cover that from the other side.
   * Zero values print as a dash, so they are reported as "not testable".
+  * Rows sourced from a trading-update announcement rather than an annual report page are
+    reported separately (source named in `source_report`).
   * Rows flagged as derived (e.g. a finance split built from two note lines) are not
     printed as a single number; they are reported as "derived" with the working in `note`.
 
@@ -56,11 +58,14 @@ def main() -> int:
     args = ap.parse_args()
     pdf_dir = pathlib.Path(args.pdf_dir)
 
-    counts = {"verified": 0, "not found": 0, "not testable (zero)": 0, "derived": 0}
+    counts = {"verified": 0, "not found": 0, "not testable (zero)": 0, "derived": 0, "other source (not a PDF page)": 0}
     problems = []
     with open(DATA, newline="") as f:
         for row in csv.DictReader(f):
             value = float(row["value"])
+            if not row["pdf_page"]:
+                counts["other source (not a PDF page)"] += 1
+                continue
             if row["note"] and ("derived" in row["note"].lower() or "+" in row["note"] or "less" in row["note"]):
                 counts["derived"] += 1
                 continue

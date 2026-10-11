@@ -101,12 +101,12 @@ frm("rev_chk", "Check: split less revenue (should be 0)", "={c}{rev_cm}+{c}{rev_
 inp("shops_open0", "Shops at start of year", "FY20 closing: AR25 p176",
     "Only FY21's opening figure is typed; later years link to the prior year's closing shops.", fmt=INT)
 inp("shops", "Shops at year end (total)", "AR25 p176 (ten-year history)", fmt=INT)
-inp("fr", "of which franchised", "FY21 AR21 p18; FY22 AR22 p15; FY23 AR23 p17; FY24 AR24 p33; FY25 not found",
-    "FY21: AR21 says 'we currently have ... 375 franchise locations' (written in early 2022), so treat as approximate. FY25: not stated in the report text. Find it in the FY25 results announcement (March 2026) and type it in.", fmt=INT)
+inp("fr", "of which franchised", "FY21 AR21 p18; FY22 AR22 p15; FY23 AR23 p17; FY24 AR24 p33; FY25 Q4 trading update 8 Jan 2026",
+    "FY21: AR21 says 'we currently have ... 375 franchise locations' (written in early 2022), so treat as approximate. FY25: 602 franchised and 2,137 company-managed, from the Q4 trading update (8 Jan 2026).", fmt=INT)
 frm("cm", "of which company-managed", "=IF({c}{fr}=\"\",\"\",{c}{shops}-{c}{fr})", fmt=INT)
-inp("opened", "Gross openings", "FY21 AR21 p18; FY22 AR22 p15; FY23 AR23 p17; FY24 AR24 p22; FY25 not found",
-    "Includes franchised openings (FY22: 70; FY23: 72; FY24: 63). FY25 gross openings and closures are not stated in the report text; only 121 net. Find them in the FY25 results announcement.", fmt=INT)
-inp("closed", "Closures (incl. relocations)", "FY21 AR21 p18; FY22 AR22 p15; FY23 derived; FY24 AR24 p22",
+inp("opened", "Gross openings", "FY21 AR21 p18; FY22 AR22 p15; FY23 AR23 p17; FY24 AR24 p22; FY25 Q4 trading update 8 Jan 2026",
+    "Includes franchised openings (FY22: 70; FY23: 72; FY24: 63). FY25: 207 opened and 86 closed (50 relocations, 36 closures), from the Q4 trading update (8 Jan 2026).", fmt=INT)
+inp("closed", "Closures (incl. relocations)", "FY21 AR21 p18; FY22 AR22 p15; FY23 derived; FY24 AR24 p22; FY25 Q4 trading update",
     "FY23 derived: 220 opened less 145 net = 75. Relocations count as a closure plus an opening.", fmt=INT)
 frm("net", "Net openings", "={c}{shops}-{prev}{shops}", fmt=INT, cm=None)
 frm("net_chk", "Check: openings + closures less net (should be 0)", "=IF({c}{opened}=\"\",0,{c}{opened}+{c}{closed}-{c}{net})", fmt=INT)
@@ -900,14 +900,6 @@ for k, (lab, drow, (a0, a1)) in enumerate(tchecks):
 rng2 = f"C{tr+1}:G{tr+3}"
 ck.conditional_formatting.add(rng2, FormulaRule(formula=[f'AND(C{tr+1}<>"",ABS(C{tr+1})>=0.05)'], fill=red))
 ck.conditional_formatting.add(rng2, FormulaRule(formula=[f'AND(C{tr+1}<>"",ABS(C{tr+1})<0.05)'], fill=grn))
-
-# ---------------------------------------------------------------- FY25 estimate (not in the annual report text)
-_c = ws.cell(row=rowmap["fr"], column=FC + 4, value=610)
-_c.font = BLUE; _c.fill = PatternFill("solid", fgColor="FCE4D6"); _c.number_format = INT
-_c.comment = Comment("ESTIMATE, not from the annual report. Derived from the 12 May 2026 trading update "
-                     "(2,141 company-managed and 618 franchised shops at 9 May 2026, after 20 net openings in 2026) "
-                     "by assuming 60% of those openings were company-managed: 618 - 8 = 610. "
-                     "Replace with the actual figure from the FY25 results announcement.", "Claude")
 
 # ---------------------------------------------------------------- Revenue build tab (built by Siddharth in Session C)
 rv = wb.create_sheet("Revenue", wb.sheetnames.index("Forecast"))
