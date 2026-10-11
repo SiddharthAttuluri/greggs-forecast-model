@@ -60,7 +60,7 @@ Three scenarios show the extremes; the simulation shows how likely each outcome 
 Results are conditional on the chosen ranges and correlations, not a forecast of certainty.
 
 - In about 90% of runs FY26 underlying profit before tax beats FY25 (£171.9m).
-- Cash stays positive in every run (below £50m in about 1%), so on these assumptions no new borrowing is needed.
+- Cash stays positive in every simulated run (below £50m in about 1%), so on these assumptions no new borrowing is needed.
 - Margin is by far the biggest driver of FY28 profit (a £53m swing across its range), followed by like-for-like growth (£23m).
 
 ![FY26 distribution](simulation/results/fy26_upbt_histogram.png)

@@ -34,7 +34,7 @@ DEFAULT_CONCLUSIONS = [
     "On the chosen ranges and correlations, FY26 underlying profit beats FY25's £171.9m in about 90% of 10,000 runs "
     "(P5–P95: £170m–£190m). That makes growth the most likely outcome under these inputs, not a certainty: the "
     "probability depends on the ranges set, and a shock outside them is not captured.",
-    "Cash stays positive in every run and falls below £50m in about 1% of runs. On these assumptions, falling capex "
+    "Cash stays positive in every simulated run and falls below £50m in about 1% of runs. On these assumptions, falling capex "
     "lets Greggs fund openings, restructuring and dividends without new debt, after negative free cash flow in FY25.",
     "I would watch like-for-like growth. Margin moves FY28 profit most (a £53m swing across its range), but LFL moves "
     "it £23m directly and, through its 0.5 correlation with margin in the simulation, pulls margin with it. LFL has "
