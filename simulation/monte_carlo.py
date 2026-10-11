@@ -19,7 +19,7 @@ How it works
    (one driver at a time moved to its min and max, others at base).
 
 Usage:
-    python simulation/monte_carlo.py --workbook model/GRG_model_v0.5.xlsx
+    python simulation/monte_carlo.py --workbook model/GRG_model_v0.7.xlsx
 """
 import argparse
 import csv
@@ -64,6 +64,7 @@ def load_inputs(workbook):
         "invd": row(23), "recd": row(24), "payd": row(25), "deppct": row(26), "intshare": row(27),
         "amortpct": row(28), "roudep": row(29), "leaseint": row(30), "cashint": row(31),
         "borrint": row(32), "dtlpct": row(33), "shares": row(34), "curlease": row(35),
+        "firstyr": row(36),
     }
     corr = {("lfl", "margin"): d["C38"].value, ("lfl", "b2b"): d["C39"].value}
 
@@ -99,7 +100,7 @@ def project(dv, fx, op):
         # revenue build (Revenue tab)
         cmnet = x["open"] * x["cmshare"]
         sps = s["sps"] * (1 + x["lfl"])
-        cmrev = s["cmrev"] * (1 + x["lfl"]) + (s["cmnet"] + cmnet) * 0.5 * sps * x["newshop"]
+        cmrev = s["cmrev"] * (1 + x["lfl"]) + (s["cmnet"] * (1 - f["firstyr"]) + cmnet * f["firstyr"]) * sps * x["newshop"]
         b2b = s["b2b"] * (1 + x["b2b"])
         rev = cmrev + b2b
         shops = s["shops"] + x["open"]
@@ -206,7 +207,7 @@ def check_against_excel(workbook, base_out):
 # ---------------------------------------------------------------- main
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--workbook", default=str(ROOT / "model" / "GRG_model_v0.5.xlsx"))
+    ap.add_argument("--workbook", default=str(ROOT / "model" / "GRG_model_v0.7.xlsx"))
     ap.add_argument("--runs", type=int, default=N_RUNS)
     ap.add_argument("--out", default=str(ROOT / "simulation" / "results"))
     args = ap.parse_args()

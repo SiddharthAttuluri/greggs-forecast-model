@@ -3,7 +3,7 @@
 A three-statement forecast of **Greggs plc** (LSE: GRG), the UK food-on-the-go retailer, built from five years of published annual reports (FY21–FY25). The model forecasts FY26–FY28 from the business's own drivers: shop openings, like-for-like sales growth, operating margin, capex and working capital. It will be tested against Greggs' reported results and extended with a Monte Carlo simulation of the full three statements.
 
 **Author:** Siddharth Attuluri, BSc Business Management, University of Birmingham; ACCA student
-**Status:** work in progress (October 2026). The historical data stage is complete; the forecast is being built.
+**Status:** model complete (v0.7, October 2026). Next: lock the FY26 forecast before Greggs' January 2027 trading update and compare it with actual results.
 
 ## Project stages
 
@@ -18,12 +18,12 @@ A three-statement forecast of **Greggs plc** (LSE: GRG), the UK food-on-the-go r
 ## What is in this repository
 
 ```
-data/greggs_historicals_fy21_fy25.csv   407 figures: line item, year, value, source report, PDF page
+data/greggs_historicals_fy21_fy25.csv   410 figures: line item, year, value, source report, PDF page
 scripts/locate_statements.py            finds the statements and key notes in each annual report
 scripts/verify_sources.py               checks every figure is printed on the page it cites
 scripts/reconcile.py                    rebuilds every subtotal and ties it to the reported totals
 scripts/build_workbook.py               builds the Excel model from the CSV
-model/GRG_model_v0.6.xlsx               the current Excel model: assumptions, revenue build, FY26–FY28 forecast, scenarios, back-test, tax and audit review, simulation results
+model/GRG_model_v0.7.xlsx               the current Excel model: assumptions, revenue build, FY26–FY28 forecast, scenarios, back-test, tax and audit review, simulation results, one-page summary
 simulation/monte_carlo.py               Monte Carlo engine: re-implements the model in Python and runs 10,000 scenarios
 simulation/charts.py, add_to_workbook.py  charts and the Simulation tab
 simulation/results/                     percentiles, probabilities, tornado table, run-level outputs, charts
@@ -82,7 +82,7 @@ python scripts/locate_statements.py
 python scripts/verify_sources.py
 python scripts/reconcile.py
 python scripts/build_workbook.py
-python simulation/monte_carlo.py --workbook model/GRG_model_v0.5.xlsx
+python simulation/monte_carlo.py --workbook model/GRG_model_v0.7.xlsx
 python simulation/charts.py
 ```
 
