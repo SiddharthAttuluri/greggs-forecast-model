@@ -1,0 +1,13 @@
+measure,year,P5,P25,P50,P75,P95,mean,base_case
+Revenue,FY26,2262.2,2272.5,2280.2,2287.7,2297.7,2280.1,2283.6
+Revenue,FY27,2357.2,2389.1,2412.6,2435.1,2466.0,2412.0,2421.1
+Revenue,FY28,2456.4,2512.3,2553.6,2593.4,2648.8,2553.0,2566.8
+Underlying profit before tax,FY26,169.8,175.6,179.9,184.1,189.9,179.9,180.2
+Underlying profit before tax,FY27,176.8,187.9,196.0,204.2,215.3,196.1,196.9
+Underlying profit before tax,FY28,193.0,206.2,216.1,226.0,239.6,216.2,217.6
+Free cash flow after leases,FY26,71.3,77.8,82.4,86.9,93.0,82.3,84.6
+Free cash flow after leases,FY27,62.8,77.1,87.2,97.1,110.4,87.0,91.0
+Free cash flow after leases,FY28,102.8,117.3,127.8,138.0,151.6,127.6,134.6
+Closing cash,FY26,71.8,78.3,82.9,87.4,93.5,82.8,85.0
+Closing cash,FY27,63.2,83.8,98.6,112.9,131.6,98.1,104.3
+Closing cash,FY28,93.0,128.2,153.3,177.2,209.8,152.5,165.7
