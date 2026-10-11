@@ -3,7 +3,7 @@
 A three-statement forecast of **Greggs plc** (LSE: GRG), the UK food-on-the-go retailer, built from five years of published annual reports (FY21–FY25). The model forecasts FY26–FY28 from the business's own drivers: shop openings, like-for-like sales growth, operating margin, capex and working capital. It will be tested against Greggs' reported results and extended with a Monte Carlo simulation of the full three statements.
 
 **Author:** Siddharth Attuluri, BSc Business Management, University of Birmingham; ACCA student
-**Status:** model complete (v0.7, October 2026). Next: lock the FY26 forecast before Greggs' January 2027 trading update and compare it with actual results.
+**Status:** model complete (v1.0, October 2026). The FY26 forecast is locked for a live test against Greggs' January 2027 trading update and March 2027 results.
 
 ## Project stages
 
@@ -13,7 +13,7 @@ A three-statement forecast of **Greggs plc** (LSE: GRG), the UK food-on-the-go r
 | 2. Base-case forecast | FY26–FY28 three statements, linked, balance sheet balancing every year; revenue section built by me | Done (v0.4) |
 | 3. Analysis | Base, upside and downside scenarios; FY25 back-test (method within 0.4%); tax-rate reconciliation FY21–FY25; key audit matter mapped to the model | Done (v0.5) |
 | 4. Monte Carlo simulation | 10,000 runs of the full three-statement model with ranged, correlated drivers (Python) | Done (v0.6) |
-| 5. Live test | FY26 forecast locked before Greggs' January 2027 trading update, then compared with actual results | Planned |
+| 5. Live test | FY26 forecast locked on 11 Oct 2026 (Variance tab), to be compared with Greggs' January 2027 trading update and March 2027 results | Forecast locked |
 
 ## What is in this repository
 
@@ -23,7 +23,7 @@ scripts/locate_statements.py            finds the statements and key notes in ea
 scripts/verify_sources.py               checks every figure is printed on the page it cites
 scripts/reconcile.py                    rebuilds every subtotal and ties it to the reported totals
 scripts/build_workbook.py               builds the Excel model from the CSV
-model/GRG_model_v0.7.xlsx               the current Excel model: assumptions, revenue build, FY26–FY28 forecast, scenarios, back-test, tax and audit review, simulation results, one-page summary
+model/GRG_model_v1.0.xlsx               the current Excel model: assumptions, revenue build, FY26–FY28 forecast, scenarios, back-test, tax and audit review, simulation results, one-page summary
 simulation/monte_carlo.py               Monte Carlo engine: re-implements the model in Python and runs 10,000 scenarios
 simulation/charts.py, add_to_workbook.py  charts and the Simulation tab
 simulation/results/                     percentiles, probabilities, tornado table, run-level outputs, charts
@@ -82,7 +82,7 @@ python scripts/locate_statements.py
 python scripts/verify_sources.py
 python scripts/reconcile.py
 python scripts/build_workbook.py
-python simulation/monte_carlo.py --workbook model/GRG_model_v0.7.xlsx
+python simulation/monte_carlo.py --workbook model/GRG_model_v1.0.xlsx
 python simulation/charts.py
 ```
 

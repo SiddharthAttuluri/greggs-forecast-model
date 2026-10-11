@@ -19,7 +19,7 @@ How it works
    (one driver at a time moved to its min and max, others at base).
 
 Usage:
-    python simulation/monte_carlo.py --workbook model/GRG_model_v0.7.xlsx
+    python simulation/monte_carlo.py --workbook model/GRG_model_v1.0.xlsx
 """
 import argparse
 import csv
@@ -207,7 +207,7 @@ def check_against_excel(workbook, base_out):
 # ---------------------------------------------------------------- main
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--workbook", default=str(ROOT / "model" / "GRG_model_v0.7.xlsx"))
+    ap.add_argument("--workbook", default=str(ROOT / "model" / "GRG_model_v1.0.xlsx"))
     ap.add_argument("--runs", type=int, default=N_RUNS)
     ap.add_argument("--out", default=str(ROOT / "simulation" / "results"))
     args = ap.parse_args()

@@ -78,10 +78,6 @@ def main():
     img2 = Image(str(RES / "tornado_fy28_upbt.png")); img2.width, img2.height = 640, 304
     ws.add_image(img1, "K4"); ws.add_image(img2, "K23")
     ws.sheet_view.showGridLines = False
-    ns = wb["Notes"]
-    ns["A2"] = ("GRG_model_v0.6 · v0.4 revenue build by Siddharth; v0.5 scenarios, back-test, tax and audit (Session D); "
-                "v0.6 Monte Carlo results tab (Session E, 11 Oct 2026)")
-    ns["B4"] = "Session F: summary page and interview drill."
     wb.save(a.out)
     print("saved", a.out)
 
