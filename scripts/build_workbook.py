@@ -361,82 +361,149 @@ for i in range(8):
 fs.freeze_panes = "C6"
 
 # ---------------------------------------------------------------- Drivers sheet
+# Session B decisions (11 Oct 2026) and defaults from FY22-FY25 history.
 ds = wb.create_sheet("Drivers")
-ds["A1"] = "Drivers – historical ratios and forecast assumptions"; ds["A1"].font = TITLE
-ds["A2"] = "Phase 2, step 1. Calculate each historical ratio yourself with formulas pointing at the Historical sheet, then set FY26–FY28 values (blue) and log the reason in Notes."; ds["A2"].font = SUB
-hdr = ["Driver", "Unit"] + YEARS + FCY + ["Reason / source (log in Notes too)"]
-for i, h in enumerate(hdr):
+ds["A1"] = "Drivers – forecast assumptions (Session B, 11 Oct 2026)"; ds["A1"].font = TITLE
+ds["A2"] = ("Blue = assumption. Base case in FY26–FY28 columns; min / max columns are the Monte Carlo ranges "
+            "(the base value is the most likely point). Reasons are logged in the project plan.")
+ds["A2"].font = SUB
+DHDR = ["Driver", "Unit", "FY26", "FY27", "FY28", "FY26 min", "FY26 max", "FY27 min", "FY27 max",
+        "FY28 min", "FY28 max", "Basis"]
+for i, h in enumerate(DHDR):
     c = ds.cell(row=4, column=1 + i, value=h); c.font = HDR; c.fill = HDRFILL
-drivers = [
-    ("Estate", None),
-    ("Gross openings", "shops"), ("Closures", "shops"), ("Net openings", "shops"),
-    ("Franchised share of net openings", "%"),
-    ("Revenue", None),
-    ("Company-managed like-for-like growth", "%"),
-    ("Sales per new shop in first year (share of a full year)", "%"),
-    ("Company-managed revenue per average shop", "£m"),
-    ("B2B revenue growth", "%"),
-    ("Profitability", None),
-    ("Underlying operating margin", "%"),
-    ("Cost inflation (LFL)", "%"),
-    ("Restructuring cost (exceptional)", "£m"),
-    ("Investment and working capital", None),
-    ("Capex", "£m"),
-    ("Depreciation as % of opening PPE", "%"),
-    ("Right-of-use assets per company-managed shop", "£m"),
-    ("Inventory days (of cost of sales)", "days"),
-    ("Receivable days (of revenue)", "days"),
-    ("Payable days (of cost of sales)", "days"),
-    ("Tax and returns", None),
-    ("UK statutory corporation tax rate", "%"),
-    ("Recurring tax adjustment (percentage points, from Tax & Audit reconciliation)", "%"),
-    ("Effective tax rate (statutory rate + adjustment)", "%"),
-    ("Dividend per share / payout ratio", "%"),
-    ("Share buybacks", "£m"),
+DRV = {}      # name -> row
+DCOL = ["C", "D", "E"]   # FY26, FY27, FY28 base columns
+
+
+def dsec(r, text):
+    ds.cell(row=r, column=1, value=text).font = BOLD
+    for cc in range(1, 13):
+        ds.cell(row=r, column=cc).fill = SECFILL
+
+
+def drow(r, name, label, unit, base, rng=None, basis="", fmt=PCT):
+    DRV[name] = r
+    ds.cell(row=r, column=1, value=label).font = BLACK
+    ds.cell(row=r, column=2, value=unit).font = SUB
+    for j, v in enumerate(base):
+        c = ds.cell(row=r, column=3 + j, value=v)
+        c.font = BLACK if isinstance(v, str) and v.startswith("=") else BLUE
+        c.number_format = fmt
+    if rng:
+        for j, v in enumerate(rng):
+            c = ds.cell(row=r, column=6 + j, value=v); c.font = BLUE; c.number_format = fmt
+    ds.cell(row=r, column=12, value=basis).font = SUB
+
+
+dsec(5, "Your decisions (Session B)")
+drow(6, "open", "Net shop openings", "shops", [105, 110, 110], [85, 112, 80, 140, 80, 140],
+     "Guidance 100–110; H1 2026 only 34, so more downside", INT)
+drow(7, "cmshare", "Company-managed share of net openings", "%", [0.60] * 3, [0.55, 0.65] * 3,
+     "Rising: 55%, 57%, 60% (FY22–FY24)")
+drow(8, "lfl", "Company-managed like-for-like growth", "%", [0.026, 0.03, 0.03], [0.015, 0.035, 0.005, 0.05, 0.005, 0.05],
+     "H1 2026 2.1%, Q3 c.3.4%")
+drow(9, "newshop", "New-shop sales vs average mature shop", "%", [0.85] * 3, [0.70, 0.95] * 3,
+     "Newer sites are smaller formats and ramp up over time")
+drow(10, "b2b", "B2B revenue growth", "%", [0.10, 0.08, 0.08], [0.06, 0.14, 0.04, 0.12, 0.04, 0.12],
+     "Slowing from 24% to 9%; Tesco Express extension")
+drow(11, "margin", "Underlying operating margin", "%", [0.088, 0.090, 0.093], [0.082, 0.094, 0.080, 0.100, 0.083, 0.103],
+     "H1 cost ratios improved (partly pay-award timing); H2 Derby +c.£10m; FY28 includes savings")
+drow(12, "rtotal", "Restructuring total cost", "£m", [60, None, None], [45, 75],
+     "Proposal: c.£60m cash cost (Monte Carlo scales the phasing below)", NUM)
+drow(13, "rpl", "Restructuring P&L charge phasing (IAS 37, option A)", "% of total", [0.75, 10 / 60, 5 / 60], None,
+     "£45m / £10m / £5m at £60m total")
+drow(14, "rcash", "Restructuring cash phasing", "% of total", [10 / 60, 35 / 60, 15 / 60], None,
+     "£10m / £35m / £15m at £60m total")
+drow(15, "capex", "Capex (PPE + intangibles)", "£m", [180, 165, 160], [170, 195, 140, 200, 140, 200],
+     "FY26 guidance £180m; capital intensity falling", NUM)
+drow(16, "infl", "Inflation (dividend uplift)", "%", [0.02, 0.02, 0.02], None, "Greggs: c.2% LFL cost inflation")
+drow(17, "dps", "Dividend per share declared", "£", ["=0.69*(1+C16)", "=C17*(1+D16)", "=D17*(1+E16)"], None,
+     "69p held in real terms", '0.000')
+drow(18, "tax", "Tax rate (on profit before tax)", "%", [0.26] * 3, [0.255, 0.27] * 3,
+     "Underlying rate 25.7–26.8% vs 25% statutory")
+
+dsec(20, "Defaults (from FY22–FY25 history, approved in Session B)")
+drow(21, "gm", "Gross margin", "%", [0.615] * 3, None, "FY22–FY25 average 61.5%")
+drow(22, "admpct", "Administrative costs (underlying) % of revenue", "%", [0.047] * 3, None, "FY22–FY25 average 4.7%")
+drow(23, "invd", "Inventory days (of cost of sales)", "days", [25] * 3, None, "FY22–FY25 average", NUM)
+drow(24, "recd", "Receivable days (of revenue)", "days", [11.5] * 3, None, "FY22–FY25 average", NUM)
+drow(25, "payd", "Payable days (of revenue)", "days", [45] * 3, None, "FY22–FY25 average", NUM)
+drow(26, "deppct", "PPE depreciation % of opening PPE", "%", [0.135] * 3, None, "Fell from 17.1% to 13.6% as long-life sites added")
+drow(27, "intshare", "Intangible capex % of total capex", "%", [0.08] * 3, None, "FY25: 7.7%")
+drow(28, "amortpct", "Amortisation % of opening intangibles", "%", [0.18] * 3, None, "FY25: 18.9%")
+drow(29, "roudep", "Right-of-use depreciation % of opening ROU assets", "%", [0.17] * 3, None, "FY25: 16.8%")
+drow(30, "leaseint", "Lease interest % of opening lease liability", "%", [0.039] * 3, None, "FY24–FY25 c.3.9–4.0%")
+drow(31, "cashint", "Interest on cash % of opening cash", "%", [0.03] * 3, None, "FY24 4.1%, FY25 1.4% (lower balances)")
+drow(32, "borrint", "Interest on borrowings %", "%", [0.05] * 3, None, "FY25: c.5% on average drawn")
+drow(33, "dtlpct", "Deferred tax build-up % of (capex − depreciation and amortisation)", "%", [0.11] * 3, None,
+     "FY24–FY25: c.11%")
+drow(34, "shares", "Shares in issue (m)", "m", [101.9] * 3, None,
+     "Derived: FY25 dividends paid £70.3m ÷ 69p", NUM)
+drow(35, "curlease", "Current share of lease liabilities", "%", [0.139] * 3, None, "FY25: 62.5 / 449.8")
+
+dsec(37, "Monte Carlo driver links (Session B)")
+drow(38, "c_lfl_m", "Correlation: LFL growth and operating margin", "corr", [0.5, None, None], None, "Moderate", '0.0')
+drow(39, "c_lfl_b", "Correlation: LFL growth and B2B growth", "corr", [0.3, None, None], None, "Weak", '0.0')
+
+# historical reference ratios (formulas on Historical)
+dsec(41, "Historical reference (calculated from the Historical tab)")
+for i, h in enumerate(["Ratio", "", "FY22", "FY23", "FY24", "FY25"]):
+    c = ds.cell(row=42, column=1 + i, value=h); c.font = HDR; c.fill = HDRFILL
+H = rowmap
+REF = [
+    ("Revenue growth", lambda c, p: f"=Historical!{c}{H['rev']}/Historical!{p}{H['rev']}-1", PCT),
+    ("Like-for-like growth", lambda c, p: f"=Historical!{c}{H['lfl']}", PCT),
+    ("B2B revenue growth", lambda c, p: f"=Historical!{c}{H['rev_b2b']}/Historical!{p}{H['rev_b2b']}-1", PCT),
+    ("Gross margin", lambda c, p: f"=1+Historical!{c}{H['cos']}/Historical!{c}{H['rev']}", PCT),
+    ("Underlying operating margin", lambda c, p: f"=Historical!{c}{H['uopm']}", PCT),
+    ("Inventory days", lambda c, p: f"=-Historical!{c}{H['inv']}/Historical!{c}{H['cos']}*365", NUM),
+    ("Receivable days", lambda c, p: f"=Historical!{c}{H['rec']}/Historical!{c}{H['rev']}*365", NUM),
+    ("Payable days (of revenue)", lambda c, p: f"=-Historical!{c}{H['pay']}/Historical!{c}{H['rev']}*365", NUM),
+    ("PPE depreciation % opening PPE", lambda c, p: f"=Historical!{c}{H['n_dppe']}/Historical!{p}{H['ppe']}", PCT),
+    ("Capex £m", lambda c, p: f"=-Historical!{c}{H['capex']}", NUM),
 ]
-rr = 5
-for name, unit in drivers:
-    if unit is None:
-        ds.cell(row=rr, column=1, value=name).font = BOLD
-        for cc in range(1, 12):
-            ds.cell(row=rr, column=cc).fill = SECFILL
-    else:
-        ds.cell(row=rr, column=1, value=name).font = BLACK
-        ds.cell(row=rr, column=2, value=unit).font = SUB
-        for j in range(3):
-            ds.cell(row=rr, column=FC + 5 + j).fill = YELLOW
-    rr += 1
-rr += 1
-ds.cell(row=rr, column=1, value="Latest company guidance and H1 2026 data (context for your FY26 assumptions)").font = BOLD
-for cc in range(1, 12):
-    ds.cell(row=rr, column=cc).fill = SECFILL
+for k, (lab, f, fmt) in enumerate(REF):
+    rr = 43 + k
+    ds.cell(row=rr, column=1, value=lab).font = BLACK
+    for j, (c, p) in enumerate([("D", "C"), ("E", "D"), ("F", "E"), ("G", "F")]):
+        cell = ds.cell(row=rr, column=3 + j, value=f(c, p)); cell.font = GREEN; cell.number_format = fmt
+
+rr = 43 + len(REF) + 1
+dsec(rr, "Latest company guidance and H1 2026 data")
 rr += 1
 guide = [
-    ("H1 2026 sales (£m), 26 weeks to 27 Jun 2026", 1101.5, "H1 2026 presentation, slides 3 and 6", NUM),
-    ("H1 2025 sales (£m)", 1027.7, "H1 2026 presentation, slide 6", NUM),
-    ("H1 2026 operating profit (£m)", 86.5, "slide 6", NUM),
-    ("H1 2025 operating profit (£m)", 70.4, "slide 6", NUM),
-    ("H1 2026 profit before tax (£m)", 76.0, "slide 6", NUM),
+    ("H1 2026 sales (£m), 26 weeks to 27 Jun 2026 (H1 2025: 1,027.7)", 1101.5, "H1 2026 presentation, slides 3 and 6", NUM),
+    ("H1 2026 operating profit (£m) (H1 2025: 70.4)", 86.5, "slide 6", NUM),
     ("H1 2026 company-managed LFL growth", 0.021, "slide 3", PCT),
     ("Shops trading at 27 Jun 2026", 2773, "slide 18", INT),
-    ("FY26 net openings guidance (low)", 100, "slide 18: 'expect 100–110 net shop openings in 2026'", INT),
-    ("FY26 net openings guidance (high)", 110, "slide 18", INT),
-    ("FY26 capex guidance (£m)", 180, "slide 11: 'reduced from £200m to £180m'", NUM),
-    ("FY26 LFL cost inflation expectation", 0.02, "slide 10: 'full-year expectation now lower at c.2%'", PCT),
-    ("H2 2026 extra Derby site costs vs H2 2025 (£m)", 10, "slide 9: 'H2 costs will step up by c.£10m'", NUM),
+    ("FY26 net openings guidance", "100–110", "slide 18", None),
+    ("FY26 capex guidance (£m)", 180, "slide 11", NUM),
+    ("FY26 LFL cost inflation expectation", 0.02, "slide 10", PCT),
+    ("H2 2026 extra Derby site costs (£m)", 10, "slide 9", NUM),
 ]
 for lab, v, src, fmt in guide:
     ds.cell(row=rr, column=1, value=lab).font = BLACK
-    c = ds.cell(row=rr, column=FC, value=v); c.font = BLUE; c.number_format = fmt
-    ds.cell(row=rr, column=FC + 8, value=src).font = SUB
+    c = ds.cell(row=rr, column=3, value=v); c.font = BLUE
+    if fmt:
+        c.number_format = fmt
+    ds.cell(row=rr, column=12, value=src).font = SUB
     rr += 1
-ds.cell(row=rr + 1, column=1, value="Not in your files, from the September 2026 Q3 trading update (verify on Greggs' investor site): Q3 LFL c.3.4%; proposed supply-chain restructuring, c.740 roles, c.£60m cash cost, c.£20m annual savings by FY28–29.").font = SUB
-ds.column_dimensions["A"].width = 55
-ds.column_dimensions["B"].width = 8
-for i in range(8):
-    ds.column_dimensions[L(FC + i)].width = 11
-ds.column_dimensions[L(FC + 8)].width = 55
+ds.column_dimensions["A"].width = 58
+ds.column_dimensions["B"].width = 10
+for cl in "CDEFGHIJK":
+    ds.column_dimensions[cl].width = 10
+ds.column_dimensions["L"].width = 70
 ds.freeze_panes = "C5"
+
+
+def D(name, j):
+    """Absolute reference to a driver for forecast year j (0 = FY26)."""
+    return f"Drivers!${DCOL[j]}${DRV[name]}"
+
+
+def D0(name):
+    return f"Drivers!$C${DRV[name]}"
+
 
 # ---------------------------------------------------------------- Scenarios
 sc = wb.create_sheet("Scenarios")
@@ -567,9 +634,9 @@ sm.column_dimensions["A"].width = 100
 # ---------------------------------------------------------------- Notes (first tab)
 ns = wb.create_sheet("Notes", 0)
 ns["A1"] = "Greggs three-statement forecast model – Notes"; ns["A1"].font = TITLE
-ns["A2"] = "GRG_model_v0.2 · v0.1 shell and historicals by Claude 9 Oct 2026; v0.2 adds the Tax & Audit tab (10 Oct 2026) · save a new version each session"; ns["A2"].font = SUB
+ns["A2"] = "GRG_model_v0.3 · v0.1 shell and historicals (9 Oct 2026); v0.2 Tax & Audit tab (10 Oct); v0.3 Session B assumptions and full forecast except revenue (11 Oct) · save a new version each session"; ns["A2"].font = SUB
 ns["A4"] = "NEXT STEP"; ns["A4"].font = BOLD; ns["A4"].fill = YELLOW
-ns["B4"] = "Phase 1: check the Historical sheet block by block against the PDFs (pages are given in column B), and tick each block on the Checks sheet."; ns["B4"].font = BLUE; ns["B4"].fill = YELLOW
+ns["B4"] = "Session C: build the revenue section on the Revenue tab (yellow cells). Then check the Checks tab: the balance sheet and cash checks should read 0 for FY26–FY28."; ns["B4"].font = BLUE; ns["B4"].fill = YELLOW
 r0 = 6
 ns.cell(row=r0, column=1, value="Colour key").font = BOLD
 key = [("Blue text", "Typed input from a report or your own assumption", BLUE, None),
@@ -584,8 +651,9 @@ for k, (a, b, fnt, fl) in enumerate(key):
 r1 = r0 + 8
 ns.cell(row=r1, column=1, value="Tabs").font = BOLD
 tabs = [("Historical", "FY21–FY25 statements, revenue split, shop KPIs, with page references. Filled."),
-        ("Forecast", "Same rows; FY21–FY25 linked, FY26–FY28 for you to build (Phase 2)."),
-        ("Drivers", "Driver list (empty for you to calculate) plus H1 2026 data and guidance."),
+        ("Revenue", "Session C: company-managed shop roll-forward and B2B revenue, built by Siddharth."),
+        ("Forecast", "Same rows; FY21–FY25 linked; FY26–FY28 formulas driven by Drivers and Revenue, with schedules at the bottom."),
+        ("Drivers", "Session B assumptions with Monte Carlo ranges, approved defaults, historical reference ratios, H1 2026 guidance."),
         ("Scenarios", "Switch cell and base/upside/downside table (Phase 3)."),
         ("Variance", "FY25 back-test and FY26 live-test layouts; actual FY25 already linked."),
         ("Tax & Audit", "Phase 3: tax rate reconciliation, deferred tax roll-forward, key audit matters map, model controls."),
@@ -833,6 +901,250 @@ rng2 = f"C{tr+1}:G{tr+3}"
 ck.conditional_formatting.add(rng2, FormulaRule(formula=[f'AND(C{tr+1}<>"",ABS(C{tr+1})>=0.05)'], fill=red))
 ck.conditional_formatting.add(rng2, FormulaRule(formula=[f'AND(C{tr+1}<>"",ABS(C{tr+1})<0.05)'], fill=grn))
 
-out = ROOT / "model" / "GRG_model_v0.2.xlsx"
+# ---------------------------------------------------------------- FY25 estimate (not in the annual report text)
+_c = ws.cell(row=rowmap["fr"], column=FC + 4, value=610)
+_c.font = BLUE; _c.fill = PatternFill("solid", fgColor="FCE4D6"); _c.number_format = INT
+_c.comment = Comment("ESTIMATE, not from the annual report. Derived from the 12 May 2026 trading update "
+                     "(2,141 company-managed and 618 franchised shops at 9 May 2026, after 20 net openings in 2026) "
+                     "by assuming 60% of those openings were company-managed: 618 - 8 = 610. "
+                     "Replace with the actual figure from the FY25 results announcement.", "Claude")
+
+# ---------------------------------------------------------------- Revenue build tab (built by Siddharth in Session C)
+rv = wb.create_sheet("Revenue", wb.sheetnames.index("Forecast"))
+rv["A1"] = "Revenue build – company-managed shops and B2B (FY26–FY28)"; rv["A1"].font = TITLE
+for i, h in enumerate(["Line", "How to calculate", "FY25", "FY26", "FY27", "FY28"]):
+    c = rv.cell(row=4, column=1 + i, value=h); c.font = HDR; c.fill = HDRFILL
+H = rowmap
+RV = {}
+RVCOL = ["D", "E", "F"]          # FY26..FY28 on this tab
+REV_ROWS = [
+    # key, label, hint, FY25 value/formula, fmt
+    ("sec1", "Company-managed shop roll-forward", None, None, None),
+    ("start", "Company-managed shops at start of year", "= last year's closing shops", None, INT),
+    ("cmnet", "Company-managed net openings", "= net openings × company-managed share (Drivers)",
+     f"=Historical!G{H['cm']}-Historical!F{H['cm']}", INT),
+    ("end", "Company-managed shops at end of year", "= start + net openings", f"=Historical!G{H['cm']}", INT),
+    ("sec2", "Sales per shop", None, None, None),
+    ("lfl", "Like-for-like growth", "= link to Drivers", f"=Historical!G{H['lfl']}", PCT),
+    ("sps", "Sales per mature shop (£m)", "= last year × (1 + LFL)", f"=Historical!G{H['revshop']}", '0.000'),
+    ("newpct", "New-shop sales vs mature shop", "= link to Drivers", None, PCT),
+    ("sec3", "Company-managed revenue", None, None, None),
+    ("exist", "Existing estate", "= last year's company-managed revenue × (1 + LFL)", None, NUM),
+    ("annual", "Full-year effect of last year's openings", "= last year's net openings × 50% × sales per shop × new-shop %", None, NUM),
+    ("newrev", "This year's openings (half a year)", "= this year's net openings × 50% × sales per shop × new-shop %", None, NUM),
+    ("cmrev", "Company-managed revenue", "= existing + full-year effect + this year's openings",
+     f"=Historical!G{H['rev_cm']}", NUM),
+    ("b2b", "B2B revenue", "= last year × (1 + B2B growth from Drivers)", f"=Historical!G{H['rev_b2b']}", NUM),
+    ("total", "Total revenue", "= company-managed + B2B", f"=Historical!G{H['rev']}", NUM),
+    ("growth", "Revenue growth", "= this year ÷ last year − 1", None, PCT),
+    ("sec4", "Checks and sense checks", None, None, None),
+    ("chk", "Check: shops at end vs Forecast tab (should be 0)", "Filled for you", None, INT),
+]
+r = 5
+for key, lab, hint, fy25, fmt in REV_ROWS:
+    if key.startswith("sec"):
+        rv.cell(row=r, column=1, value=lab).font = BOLD
+        for cc in range(1, 7):
+            rv.cell(row=r, column=cc).fill = SECFILL
+        r += 1
+        continue
+    RV[key] = r
+    rv.cell(row=r, column=1, value=lab).font = BOLDBLACK if key in ("cmrev", "total") else BLACK
+    if hint:
+        rv.cell(row=r, column=2, value=("Calculate: " + hint[1:].strip()) if hint.startswith("=") else hint).font = SUB
+    if fy25:
+        c = rv.cell(row=r, column=3, value=fy25); c.font = GREEN; c.number_format = fmt
+    for j in range(3):
+        c = rv.cell(row=r, column=4 + j)
+        c.number_format = fmt
+        if key != "chk":
+            c.fill = YELLOW; c.font = BLACK
+    r += 1
+rv["A2"] = (f"Session C: fill the yellow cells with formulas. FY25 (green) is the starting point. The Forecast tab reads company-managed and B2B revenue from rows {RV['cmrev']} and {RV['b2b']}.")
+rv["A2"].font = SUB
+# checks filled in for him
+for j in range(3):
+    fc = L(FC + 5 + j)
+    rv.cell(row=RV["chk"], column=4 + j,
+            value=f"=IF({RVCOL[j]}{RV['end']}=\"\",\"\",{RVCOL[j]}{RV['end']}-Forecast!{fc}{H['cm']})").font = BLACK
+r = RV["chk"] + 2
+rv.cell(row=r, column=1, value="Sense checks for FY26").font = BOLD
+rv.cell(row=r + 1, column=1, value="H1 2026 sales growth (26 weeks)").font = BLACK
+c = rv.cell(row=r + 1, column=3, value=0.072); c.font = BLUE; c.number_format = PCT
+rv.cell(row=r + 1, column=2, value="H1 2026 presentation, slide 6").font = SUB
+rv.cell(row=r + 2, column=1, value="Edison FY26 revenue estimate, May 2026 (£m)").font = BLACK
+c = rv.cell(row=r + 2, column=3, value=2305.8); c.font = BLUE; c.number_format = NUM
+rv.cell(row=r + 2, column=2, value="Third-party estimate: use to sense-check, not as an input").font = SUB
+rv.cell(row=r + 3, column=1, value="Your FY26 revenue vs Edison").font = BLACK
+c = rv.cell(row=r + 3, column=4, value=f"=IF(D{RV['total']}=\"\",\"\",D{RV['total']}/C{r + 2}-1)")
+c.font = BLACK; c.number_format = PCT
+rv.column_dimensions["A"].width = 46
+rv.column_dimensions["B"].width = 72
+for cl in "CDEF":
+    rv.column_dimensions[cl].width = 12
+rv.freeze_panes = "C5"
+rv.sheet_view.showGridLines = False
+
+# ---------------------------------------------------------------- Forecast FY26-FY28 formulas
+fs["A2"] = ("FY21–FY25 link to Historical (green). FY26–FY28 are formulas driven by the Drivers and Revenue tabs; "
+            "supporting schedules are at the bottom of this tab.")
+fs["A3"] = "FY26 is a 52-week year to 26 Dec 2026. Revenue comes from the Revenue tab (Session C)."
+fs["A3"].font = SUB
+
+SCH0 = LAST_HIST + 3
+fs.cell(row=SCH0 - 1, column=1, value="SUPPORTING SCHEDULES (£m, positive numbers)").font = BOLD
+for cc in range(1, FC + 8):
+    fs.cell(row=SCH0 - 1, column=cc).fill = SECFILL
+SCH_LIST = [
+    ("s_capint", "Intangible capex"), ("s_capppe", "PPE capex"), ("s_amort", "Amortisation"),
+    ("s_dep", "PPE depreciation"), ("s_leaseT", "Total lease liability"), ("s_roudep", "Right-of-use depreciation"),
+    ("s_add", "New leases (non-cash additions)"), ("s_princ", "Lease principal repaid"),
+    ("s_leaseint", "Lease interest"), ("s_borrint", "Interest on borrowings"), ("s_cashint", "Interest on cash"),
+    ("s_admu", "Underlying administrative costs"), ("s_rpl", "Restructuring P&L charge"),
+    ("s_rcash", "Restructuring cash spend"), ("s_dtl", "Deferred tax liability increase"),
+    ("s_dps", "Dividend per share declared (£)"), ("s_div", "Dividends paid in cash"),
+]
+S = {}
+for k, (key, lab) in enumerate(SCH_LIST):
+    S[key] = SCH0 + k
+    fs.cell(row=SCH0 + k, column=1, value=lab).font = BLACK
+fs.cell(row=S["s_dps"], column=FC + 4, value=0.69).font = BLUE          # FY25 declared DPS (G)
+fs.cell(row=S["s_dps"], column=FC + 4).number_format = '0.000'
+fs.cell(row=S["s_dps"], column=2, value="FY25: 69p declared (19p interim + 50p final)").font = SUB
+fs.cell(row=S["s_div"], column=2, value="Last year's declared DPS × shares (final paid the following year)").font = SUB
+fs.cell(row=S["s_dtl"], column=2, value="Drivers % × (capex − PPE depreciation − amortisation)").font = SUB
+fs.cell(row=S["s_leaseT"], column=2, value="Grows with company-managed shops").font = SUB
+fs.cell(row=S["s_add"], column=2, value="Balancing: ROU movement + ROU depreciation").font = SUB
+fs.cell(row=S["s_princ"], column=2, value="Balancing: opening liability + new leases − closing").font = SUB
+
+
+def fx(key, j):
+    return f"{L(FC + 5 + j)}{H[key]}"
+
+
+def fp(key, j):
+    return f"{L(FC + 4 + j)}{H[key]}"
+
+
+def sx(key, j):
+    return f"{L(FC + 5 + j)}{S[key]}"
+
+
+def sp(key, j):
+    return f"{L(FC + 4 + j)}{S[key]}"
+
+
+def f_for(key, j):
+    """Forecast formula for a main-statement row in forecast year j, or None to leave blank."""
+    c = L(FC + 5 + j)
+    rvc = RVCOL[j]
+    F = {
+        "rev_cm": f"=Revenue!{rvc}{RV['cmrev']}",
+        "rev_b2b": f"=Revenue!{rvc}{RV['b2b']}",
+        "rev": f"={fx('rev_cm', j)}+{fx('rev_b2b', j)}",
+        "cos": f"=-{fx('rev', j)}*(1-{D('gm', j)})",
+        "ds": f"={D('margin', j)}*{fx('rev', j)}-{fx('rev', j)}-{fx('cos', j)}+{sx('s_admu', j)}",
+        "adm": f"=-{sx('s_admu', j)}+{fx('exop', j)}",
+        "oth": "=0",
+        "finc": f"={sx('s_cashint', j)}",
+        "fexp": f"=-{sx('s_leaseint', j)}-{sx('s_borrint', j)}",
+        "tax": f"=-{D('tax', j)}*{fx('pbt', j)}",
+        "exop": f"=-{sx('s_rpl', j)}",
+        "exfin": "=0",
+        "extax": f"=-{fx('exop', j)}*{D('tax', j)}",
+        "shops_open0": f"={fp('shops', j)}",
+        "shops": f"={fx('shops_open0', j)}+{D('open', j)}",
+        "fr": f"={fp('fr', j)}+(1-{D('cmshare', j)})*{D('open', j)}",
+        "lfl": f"={D('lfl', j)}",
+        # balance sheet
+        "intang": f"={fp('intang', j)}+{sx('s_capint', j)}-{sx('s_amort', j)}",
+        "ppe": f"={fp('ppe', j)}+{sx('s_capppe', j)}-{sx('s_dep', j)}",
+        "rou": f"={fp('rou', j)}*{fx('cm', j)}/{fp('cm', j)}",
+        "pena": "=0", "ahfs": "=0", "cta": "=0",
+        "inv": f"=-{fx('cos', j)}*{D('invd', j)}/365",
+        "rec": f"={fx('rev', j)}*{D('recd', j)}/365",
+        "cash": f"={fx('cash1', j)}",
+        "pay": f"=-{fx('rev', j)}*{D('payd', j)}/365",
+        "ctl": f"={fp('ctl', j)}",
+        "leasec": f"=-{sx('s_leaseT', j)}*{D('curlease', j)}",
+        "leasenc": f"=-{sx('s_leaseT', j)}*(1-{D('curlease', j)})",
+        "provc": f"={fp('provc', j)}-({sx('s_rpl', j)}-{sx('s_rcash', j)})",
+        "borr": f"={fp('borr', j)}",
+        "opay": f"={fp('opay', j)}",
+        "dtl": f"={fp('dtl', j)}-{sx('s_dtl', j)}",
+        "provnc": f"={fp('provnc', j)}",
+        "penl": f"={fp('penl', j)}",
+        "sc": f"={fp('sc', j)}", "sp": f"={fp('sp', j)}", "crr": f"={fp('crr', j)}",
+        "re": f"={fp('re', j)}+{fx('pat', j)}+{fx('div', j)}",
+        # cash flow
+        "cgo": (f"={fx('op', j)}+{sx('s_dep', j)}+{sx('s_amort', j)}+{sx('s_roudep', j)}"
+                f"-({fx('inv', j)}-{fp('inv', j)})-({fx('rec', j)}-{fp('rec', j)})"
+                f"-({fx('pay', j)}-{fp('pay', j)})-({fx('provc', j)}-{fp('provc', j)})"),
+        "taxp": f"={fx('tax', j)}-({fx('dtl', j)}-{fp('dtl', j)})",
+        "intr": f"={fx('finc', j)}",
+        "intl": f"=-{sx('s_leaseint', j)}",
+        "intb": f"=-{sx('s_borrint', j)}",
+        "capppe": f"=-{sx('s_capppe', j)}",
+        "capint": f"=-{sx('s_capint', j)}",
+        "dispppe": "=0", "dispahfs": "=0", "bdraw": "=0", "brep": "=0", "shiss": "=0",
+        "ownsale": "=0", "ownbuy": "=0",
+        "div": f"=-{sx('s_div', j)}",
+        "leasep": f"=-{sx('s_princ', j)}",
+        "cash0": f"={fp('cash1', j)}",
+    }
+    return F.get(key)
+
+
+SCHF = {
+    "s_capint": lambda j: f"={D('capex', j)}*{D('intshare', j)}",
+    "s_capppe": lambda j: f"={D('capex', j)}-{sx('s_capint', j)}",
+    "s_amort": lambda j: f"={fp('intang', j)}*{D('amortpct', j)}",
+    "s_dep": lambda j: f"={fp('ppe', j)}*{D('deppct', j)}",
+    "s_leaseT": lambda j: f"=-({fp('leasec', j)}+{fp('leasenc', j)})*{fx('cm', j)}/{fp('cm', j)}",
+    "s_roudep": lambda j: f"={fp('rou', j)}*{D('roudep', j)}",
+    "s_add": lambda j: f"={fx('rou', j)}-{fp('rou', j)}+{sx('s_roudep', j)}",
+    "s_princ": lambda j: f"=-({fp('leasec', j)}+{fp('leasenc', j)})+{sx('s_add', j)}-{sx('s_leaseT', j)}",
+    "s_leaseint": lambda j: f"=-({fp('leasec', j)}+{fp('leasenc', j)})*{D('leaseint', j)}",
+    "s_borrint": lambda j: f"=-{fp('borr', j)}*{D('borrint', j)}",
+    "s_cashint": lambda j: f"=MAX({fp('cash', j)},0)*{D('cashint', j)}",
+    "s_admu": lambda j: f"={fx('rev', j)}*{D('admpct', j)}",
+    "s_rpl": lambda j: f"={D0('rtotal')}*{D('rpl', j)}",
+    "s_rcash": lambda j: f"={D0('rtotal')}*{D('rcash', j)}",
+    "s_dtl": lambda j: f"={D('dtlpct', j)}*({D('capex', j)}-{sx('s_dep', j)}-{sx('s_amort', j)})",
+    "s_dps": lambda j: f"={D('dps', j)}",
+    "s_div": lambda j: f"={sp('s_dps', j)}*{D('shares', j)}",
+}
+
+for item in R:
+    key, kind = item[0], item[2]
+    if not key or kind == "sec":
+        continue
+    rr = H[key]
+    fmt = item[6]
+    for j in range(3):
+        cell = fs.cell(row=rr, column=FC + 5 + j)
+        if kind == "f":
+            tmpl = item[3]
+            if key == "net":
+                tmpl = "={c}{shops}-{c}{shops_open0}"
+            f = fill_formula(tmpl, 5 + j)
+        else:
+            f = f_for(key, j)
+        if f is None:
+            cell.fill = PatternFill(fill_type=None)
+            continue
+        cell.value = f
+        cell.font = BOLDBLACK if (kind == "f" and item[7]) else BLACK
+        cell.fill = PatternFill(fill_type=None)
+        cell.number_format = fmt
+for key, rr in S.items():
+    for j in range(3):
+        c = fs.cell(row=rr, column=FC + 5 + j, value=SCHF[key](j))
+        c.font = BLACK
+        c.number_format = '0.000' if key == "s_dps" else NUM
+
+# forecast check rows on Checks tab already reference Forecast for FY26-FY28 (balance and cash)
+
+out = ROOT / "model" / "GRG_model_v0.3.xlsx"
 wb.save(out)
 print("saved", out)
