@@ -11,7 +11,7 @@ A three-statement forecast of **Greggs plc** (LSE: GRG), the UK food-on-the-go r
 |---|---|---|
 | 1. Historical data | FY21–FY25 income statement, balance sheet, cash flow, cash-generated note, revenue split and shop KPIs, each figure referenced to its report page | Done |
 | 2. Base-case forecast | FY26–FY28 three statements, linked, balance sheet balancing every year; revenue section built by me | Done (v0.4) |
-| 3. Analysis | Base, upside and downside scenarios; FY25 back-test; tax-rate reconciliation; key audit matters mapped to the model | Planned |
+| 3. Analysis | Base, upside and downside scenarios; FY25 back-test (method within 0.4%); tax-rate reconciliation FY21–FY25; key audit matter mapped to the model | Done (v0.5) |
 | 4. Monte Carlo simulation | 10,000 runs of the full three-statement model with ranged, correlated drivers (Python) | Planned |
 | 5. Live test | FY26 forecast locked before Greggs' January 2027 trading update, then compared with actual results | Planned |
 
@@ -23,7 +23,7 @@ scripts/locate_statements.py            finds the statements and key notes in ea
 scripts/verify_sources.py               checks every figure is printed on the page it cites
 scripts/reconcile.py                    rebuilds every subtotal and ties it to the reported totals
 scripts/build_workbook.py               builds the Excel model from the CSV
-model/GRG_model_v0.4.xlsx               the current Excel model: assumptions, revenue build and FY26–FY28 forecast
+model/GRG_model_v0.5.xlsx               the current Excel model: assumptions, revenue build, FY26–FY28 forecast, scenarios, back-test, tax and audit review
 ```
 
 ## Controls: how the historical data is checked
