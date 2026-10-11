@@ -10,7 +10,7 @@ A three-statement forecast of **Greggs plc** (LSE: GRG), the UK food-on-the-go r
 | Stage | What it covers | Status |
 |---|---|---|
 | 1. Historical data | FY21–FY25 income statement, balance sheet, cash flow, cash-generated note, revenue split and shop KPIs, each figure referenced to its report page | Done |
-| 2. Base-case forecast | FY26–FY28 three statements, linked, balance sheet balancing every year | In progress |
+| 2. Base-case forecast | FY26–FY28 three statements, linked, balance sheet balancing every year | Next |
 | 3. Analysis | Base, upside and downside scenarios; FY25 back-test; tax-rate reconciliation; key audit matters mapped to the model | Planned |
 | 4. Monte Carlo simulation | 10,000 runs of the full three-statement model with ranged, correlated drivers (Python) | Planned |
 | 5. Live test | FY26 forecast locked before Greggs' January 2027 trading update, then compared with actual results | Planned |
