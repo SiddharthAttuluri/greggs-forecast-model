@@ -398,8 +398,8 @@ def drow(r, name, label, unit, base, rng=None, basis="", fmt=PCT):
 dsec(5, "Your decisions (Session B)")
 drow(6, "open", "Net shop openings", "shops", [105, 110, 110], [85, 112, 80, 140, 80, 140],
      "Guidance 100–110; H1 2026 only 34, so more downside", INT)
-drow(7, "cmshare", "Company-managed share of net openings", "%", [0.60] * 3, [0.55, 0.65] * 3,
-     "Rising: 55%, 57%, 60% (FY22–FY24)")
+drow(7, "cmshare", "Company-managed share of net openings", "%", [0.63] * 3, [0.58, 0.68] * 3,
+     "Rising: 55%, 57%, 60%, 66% (FY22–FY25); revised 11 Oct after FY25 actuals")
 drow(8, "lfl", "Company-managed like-for-like growth", "%", [0.026, 0.03, 0.03], [0.015, 0.035, 0.005, 0.05, 0.005, 0.05],
      "H1 2026 2.1%, Q3 c.3.4%")
 drow(9, "newshop", "New-shop sales vs average mature shop", "%", [0.85] * 3, [0.70, 0.95] * 3,
