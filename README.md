@@ -68,7 +68,7 @@ Results are conditional on the chosen ranges and correlations, not a forecast of
 
 ## Model limitations
 
-- Operating profit is a margin on revenue, so sales changes carry no operating leverage and fixed costs are not modelled separately.
+- The model does not capture operating leverage because it forecasts operating profit as a margin on revenue; fixed costs are not modelled separately.
 - There is no separate impairment line, although recoverability of shop assets (IAS 36) is the auditor's key audit matter.
 - The simulation, scenario comparison and sensitivities are saved outputs: they must be re-run after assumptions change (below).
 
